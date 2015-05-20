@@ -50,6 +50,7 @@ public class HBaseExample {
 		while (true) {
 			String line = reader.readLine();
 			if (line == null) {
+				reader.close();
 				break;
 			}
 			totalRows+=1;
@@ -107,6 +108,7 @@ public class HBaseExample {
 		long end = System.currentTimeMillis();
 		System.err.println("Ingested " + totalRows + " rows in " +  (end - start)/1000.0 + " seconds.");
 
+		// Let's get AAPL's "open" at 14:50
 		Get g = new Get(Bytes.toBytes("AAPL_201551814"));
 		Result r = table.get(g);
 		byte[] value = r.getValue(Bytes.toBytes("opens"), Bytes.toBytes(50));
