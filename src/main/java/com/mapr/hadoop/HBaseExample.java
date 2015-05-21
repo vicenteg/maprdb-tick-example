@@ -1,5 +1,6 @@
 package com.mapr.hadoop;
 
+import com.google.common.base.Splitter;
 import org.joda.time.*;
 
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ import org.apache.hadoop.hbase.util.Bytes;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.mapr.hadoop.Tick;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
 
 // Input file is in CSV format:
 // Symbol,Date,Open,High,Low,Close,Volume
@@ -28,6 +31,7 @@ public class HBaseExample {
 	private static BufferedReader reader;
 
 	private static String generateKeyString(String symbol, DateTime dateTime) {
+		// TODO suggest String.format("%s_%tY-%<tm-%<td-%<tH", symbol ,dateTime.toDate()) here
 		return symbol + "_" + dateTime.getYear() + dateTime.getMonthOfYear() + dateTime.getDayOfMonth() + dateTime.getHourOfDay();
 	}
 	
@@ -38,6 +42,7 @@ public class HBaseExample {
 
 		reader = new BufferedReader(new FileReader(args[1]));
 		String delimiter = "[,]";
+		Splitter onComma = Splitter.on(",");
 
 		// throw away the header line.
 		String headerLine = reader.readLine();
