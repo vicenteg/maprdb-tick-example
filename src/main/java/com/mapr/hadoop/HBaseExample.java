@@ -2,6 +2,7 @@ package com.mapr.hadoop;
 
 import org.joda.time.*;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.TimeZone;
 import java.text.SimpleDateFormat;
@@ -15,6 +16,9 @@ import org.apache.hadoop.hbase.client.HTable;
 import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.mapr.hadoop.Tick;
 
 // Input file is in CSV format:
 // Symbol,Date,Open,High,Low,Close,Volume
@@ -30,6 +34,7 @@ public class HBaseExample {
 	public static void main(String[] args) throws IOException {
 		Configuration config = HBaseConfiguration.create();
 		HTable table = new HTable(config, args[0]);
+		ObjectMapper mapper = new ObjectMapper();
 
 		reader = new BufferedReader(new FileReader(args[1]));
 		String delimiter = "[,]";
@@ -38,15 +43,16 @@ public class HBaseExample {
 		String headerLine = reader.readLine();
 		// throw away the header line.
 		
-		HashMap<String, Put> accumulator = new HashMap<String, Put>();
 		HashMap<String, DateTime> currentDateTime = new HashMap<String, DateTime>();
+		HashMap<String, ArrayList<Tick>> ticks = new HashMap<String, ArrayList<Tick>>();
 		
 		int totalRows = 0;
-		SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm");
+		SimpleDateFormat format = new SimpleDateFormat("dd-MMM-yyyy HH:mm:ss.SSS");
 		format.setTimeZone(TimeZone.getTimeZone("America/New_York"));
 		DateTime jt = null;
 		
 		long start = System.currentTimeMillis();
+
 		while (true) {
 			String line = reader.readLine();
 			if (line == null) {
@@ -56,6 +62,8 @@ public class HBaseExample {
 			totalRows+=1;
 
 			String[] fields = line.split(delimiter);
+
+
 			String symbol = fields[0];
 			
 			try {
@@ -67,53 +75,59 @@ public class HBaseExample {
 			Double high = new Double(fields[3]);
 			Double low = new Double(fields[4]);
 			Double close = new Double(fields[5]);
-			Integer volume = new Integer(fields[6]);
+			Double volume = new Double(fields[6]);
+			
+			Tick t = new Tick();
+			t.setTime(jt);
+			t.setTick("open", open);
+			t.setTick("close", close);
+			t.setTick("volume", volume);
+			t.setTick("high", high);
+			t.setTick("low", low);
+			
 			
 			String keyString = generateKeyString(symbol, jt);
-			byte[] keyBytes = Bytes.toBytes(keyString);
+
+			if (ticks.get(keyString) != null) {
+				ArrayList<Tick> a = ticks.get(keyString);
+				a.add(t);
+			}
+			else {
+				ticks.put(keyString, new ArrayList<Tick>());
+			}
 			
 			if (currentDateTime.get(symbol) != null) {
 				DateTime lastDateTime = currentDateTime.get(symbol);
 				int lastHourSeen = lastDateTime.getHourOfDay();
 				
 				if (jt.getHourOfDay() > lastHourSeen) {
-					Put next = accumulator.get(generateKeyString(symbol, lastDateTime));
-					table.put(next);
+					String lastTickKeyString = generateKeyString(symbol, lastDateTime);
+					byte[] keyBytes = Bytes.toBytes(lastTickKeyString);
+					byte[] cfName = Bytes.toBytes("cf1");
+					byte[] column = Bytes.toBytes("data");
+					
+					ArrayList<Tick> lastTicks = ticks.get(lastTickKeyString);
+					Put p = new Put(keyBytes);
+					p.add(cfName, column, Bytes.toBytes(mapper.writeValueAsString(lastTicks)));
+					table.put(p);
+					ticks.remove(lastTickKeyString);
 				}
 			}
 			
 			currentDateTime.put(symbol, jt);
-			
-			if (accumulator.containsKey(keyString)) {
-				Put p = accumulator.get(keyString);
-				byte[] opensCF = Bytes.toBytes("opens");
-				byte[] closesCF = Bytes.toBytes("closes");
-				byte[] volumesCF = Bytes.toBytes("volumes");
-				byte[] highsCF = Bytes.toBytes("highs");
-				byte[] lowsCF = Bytes.toBytes("lows");
-
-				byte[] column = Bytes.toBytes(jt.getMinuteOfHour());
-				
-				p.add(opensCF, column, Bytes.toBytes(open));
-				p.add(closesCF, column, Bytes.toBytes(close));
-				p.add(highsCF, column, Bytes.toBytes(high));
-				p.add(lowsCF, column, Bytes.toBytes(low));
-				p.add(volumesCF, column, Bytes.toBytes(volume));
-			}
-			else {
-				Put p = new Put(keyBytes);
-				accumulator.put(keyString, p);
-			}
 		}
 		long end = System.currentTimeMillis();
 		System.err.println("Ingested " + totalRows + " rows in " +  (end - start)/1000.0 + " seconds.");
 
 		// Let's get AAPL's "open" at 14:50
+		/*
 		Get g = new Get(Bytes.toBytes("AAPL_201551814"));
 		Result r = table.get(g);
 		byte[] value = r.getValue(Bytes.toBytes("opens"), Bytes.toBytes(50));
 		Double opens = Bytes.toDouble(value);
 		System.err.println("GET: " + opens);
+		*/
 		table.close();
+		
 	}
 }
