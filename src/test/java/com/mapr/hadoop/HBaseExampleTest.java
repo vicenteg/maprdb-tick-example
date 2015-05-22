@@ -21,11 +21,8 @@ public class HBaseExampleTest {
 
     @Test
     public void testReadSpeed() throws IOException, InterruptedException {
-        System.out.printf("starting\n");
-        Thread.sleep(10000);
-        System.out.printf("running\n");
         DataReader rd = new DataReader();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 4; i++) {
             double t0 = System.nanoTime() * 1e-9;
             Map<String, DataReader.TransactionList> m = rd.read(Resources.newReaderSupplier(Resources.getResource("data.1M.csv"), Charsets.UTF_8));
             double t1 = System.nanoTime() * 1e-9;
@@ -36,7 +33,7 @@ public class HBaseExampleTest {
     @Test
     public void testJson() throws IOException {
         DataReader rd = new DataReader();
-        for (int i = 0; i < 20; i++) {
+        for (int i = 0; i < 4; i++) {
             double t0 = System.nanoTime() * 1e-9;
             Map<String, DataReader.TransactionList> m = rd.read(Resources.newReaderSupplier(Resources.getResource("data.1M.csv"), Charsets.UTF_8));
             double t1 = System.nanoTime() * 1e-9;
