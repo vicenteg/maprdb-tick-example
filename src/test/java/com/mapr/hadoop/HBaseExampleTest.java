@@ -6,11 +6,9 @@ import org.joda.time.DateTime;
 import org.junit.Test;
 
 import java.io.BufferedWriter;
-import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.nio.file.Files;
-import java.nio.file.StandardOpenOption;
 import java.util.Map;
 
 public class HBaseExampleTest {
@@ -42,7 +40,7 @@ public class HBaseExampleTest {
             double t0 = System.nanoTime() * 1e-9;
             Map<String, DataReader.TransactionList> m = rd.read(Resources.newReaderSupplier(Resources.getResource("data.1M.csv"), Charsets.UTF_8));
             double t1 = System.nanoTime() * 1e-9;
-            try (BufferedWriter out = Files.newBufferedWriter(new File("test.out").toPath(), StandardOpenOption.CREATE, StandardOpenOption.WRITE)) {
+            try (BufferedWriter out = new BufferedWriter(new FileWriter("test.out"))) {
                 PrintWriter pw = new PrintWriter(out);
                 for (String s : m.keySet()) {
                     m.get(s).asJson(pw);
