@@ -65,7 +65,7 @@ public class HBaseExample {
 	}
 
 	public static void main(String[] args) throws IOException {
-        Boolean async = args[2].compareTo("async") == 0;
+        Boolean async = args[2].equals("async");
 		ObjectMapper mapper = new ObjectMapper();
 
         DataReader rd = new DataReader();
