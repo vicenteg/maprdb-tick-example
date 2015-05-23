@@ -103,13 +103,13 @@ public class DataReader {
          */
         public String asJson() {
             Formatter out = new Formatter();
-            out.format("{\"times\"=[");
+            out.format("{\"times\":[");
             String separator = "";
             for (int i = 0; i < insert; i++) {
                 out.format("%s%d", separator, times[i]);
                 separator = ",";
             }
-            out.format("],\"open\"=[");
+            out.format("],\"open\":[");
             separator = "";
             for (int i = 0; i < insert; i++) {
                 out.format("%s%.3f", separator, prices[i]);
@@ -124,13 +124,13 @@ public class DataReader {
          * @param out The stream to write to.
          */
         public String asJson(PrintWriter out) {
-            out.format("{\"times\"=[");
+            out.format("{\"times\":[");
             String separator = "";
             for (int i = 0; i < insert; i++) {
                 out.format("%s%d", separator, times[i]);
                 separator = ",";
             }
-            out.format("],\"open\"=[");
+            out.format("],\"open\":[");
             separator = "";
             for (int i = 0; i < insert; i++) {
                 out.format("%s%.3f", separator, prices[i]);
