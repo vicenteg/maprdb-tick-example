@@ -76,10 +76,10 @@ public class HBaseExample {
 
 		double pt0 = System.nanoTime() * 1e-9;
         if (async) {
-            System.err.println("persisting to DB asynchronously.")
+            System.err.println("persisting to DB asynchronously.");
             persistMapAsync(m, args[0], "cf1");
         } else {
-            System.err.println("persisting to DB synchronously.")
+            System.err.println("persisting to DB synchronously.");
             persistMap(m, args[0], "cf1");
         }
 		double pt1 = System.nanoTime() * 1e-9;
