@@ -1,0 +1,51 @@
+[
+{ "name": "symbol", "class": "lookup", "file": "symbols_only.tsv" },
+{ "name": "timestamp", "class":"date", "format":"dd-MMM-yyyy HH:mm:ss.SSS", "start":"18-May-2015 09:30:00.000", "end":"18-May-2015 16:00:00.000" },
+{
+  "name": "open", "class": "join", "separator": ".",
+  "value": {
+    "class":"sequence",
+    "length":2,
+    "array":[
+      {"class":"int", "min":0, "max":"2000"},
+      {"class":"int", "min":0, "max":"99"}
+    ]
+  }
+},
+{
+  "name": "high", "class": "join", "separator": ".",
+  "value": {
+    "class":"sequence",
+    "length":2,
+    "array":[
+      {"class":"int", "min":0, "max":"2000"},
+      {"class":"int", "min":0, "max":"99"}
+    ]
+  }
+},
+{
+  "name": "low", "class": "join", "separator": ".",
+  "value": {
+    "class":"sequence",
+    "length":2,
+    "array":[
+      {"class":"int", "min":0, "max":"2000"},
+      {"class":"int", "min":0, "max":"99"}
+    ]
+  }
+},
+{
+  "name": "volume", "class": "int", "min":0, "max":"2000"
+},
+{
+  "name": "close", "class": "join", "separator": ".",
+  "value": {
+    "class":"sequence",
+    "length":2,
+    "array":[
+      {"class":"int", "min":0, "max":"2000"},
+      {"class":"int", "min":0, "max":"99"}
+    ]
+  }
+}
+]
