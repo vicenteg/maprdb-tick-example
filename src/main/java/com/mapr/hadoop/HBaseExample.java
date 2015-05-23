@@ -75,10 +75,11 @@ public class HBaseExample {
         System.out.printf("Read %d equities in %.3f seconds\n", m.size(), t1 - t0);
 
 		double pt0 = System.nanoTime() * 1e-9;
-        if (async == true) {
-            System.out.println(async);
+        if (async) {
+            System.err.println("persisting to DB asynchronously.")
             persistMapAsync(m, args[0], "cf1");
         } else {
+            System.err.println("persisting to DB synchronously.")
             persistMap(m, args[0], "cf1");
         }
 		double pt1 = System.nanoTime() * 1e-9;
