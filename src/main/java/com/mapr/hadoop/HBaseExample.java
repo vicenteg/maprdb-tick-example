@@ -44,7 +44,7 @@ public class HBaseExample {
         TickDataClient tdc = new TickDataClient("", cfName, tableName);
         tdc.init();
         for (String s : mp.keySet()) {
-            KeyValue kv = new KeyValue(Bytes.toBytes(s), Bytes.toBytes(cfName), Bytes.toBytes("data"), Bytes.toBytes(mp.get(s).asJson()));
+            KeyValue kv = new KeyValue(Bytes.toBytes(s), Bytes.toBytes(cfName), Bytes.toBytes("data"), Bytes.toBytes(mp.get(s).asJsonMaps()));
             tdc.performPut(kv);
         }
         tdc.term();
@@ -56,11 +56,8 @@ public class HBaseExample {
 
         for (String s : mp.keySet()) {
 			Put p = new Put(Bytes.toBytes(s));
-			p.add(Bytes.toBytes(cfName), Bytes.toBytes("data"), Bytes.toBytes(mp.get(s).asJson()));
+			p.add(Bytes.toBytes(cfName), Bytes.toBytes("data"), Bytes.toBytes(mp.get(s).asJsonMaps()));
 			table.put(p);
-			//ticks.remove(lastTickKeyString);
-        	//System.out.println(s);
-            //System.out.println(mp.get(s).asJson());
         }
 	}
 

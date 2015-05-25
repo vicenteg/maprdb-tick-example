@@ -98,10 +98,36 @@ public class DataReader {
             return insert;
         }
 
+        public String asJsonMaps() {
+            Formatter out = new Formatter();
+            out.format("{\"prices\":[");
+
+            for (int i = 0; i < insert; i++) {
+                if (i > 0) {
+                    out.format(",");
+                }
+                out.format("{ \"time\": %d, \"open\": %.3f }", times[i], prices[i]);
+            }
+            out.format("]\n");
+            return out.toString();
+        }
+
+        public String asJsonMaps(PrintWriter out) {
+            out.format("{\"prices\":[");
+
+            for (int i = 0; i < insert; i++) {
+                if (i > 0) {
+                    out.format(",");
+                }
+                out.format("{ \"time\": %d, \"open\": %.3f }", times[i], prices[i]);
+            }
+            out.format("]\n");
+            return out.toString();
+        }
         /**
          * Formats our data as a single JSON object with arrays of values in it.
          */
-        public String asJson() {
+        public String asJsonArrays() {
             Formatter out = new Formatter();
             out.format("{\"times\":[");
             String separator = "";
@@ -123,7 +149,7 @@ public class DataReader {
          * Formats our data to a stream without building a string.
          * @param out The stream to write to.
          */
-        public String asJson(PrintWriter out) {
+        public String asJsonArrays(PrintWriter out) {
             out.format("{\"times\":[");
             String separator = "";
             for (int i = 0; i < insert; i++) {
