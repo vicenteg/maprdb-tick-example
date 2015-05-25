@@ -108,7 +108,7 @@ public class DataReader {
                 }
                 out.format("{ \"time\": %d, \"open\": %.3f }", times[i], prices[i]);
             }
-            out.format("]\n");
+            out.format("]}\n");
             return out.toString();
         }
 
@@ -121,7 +121,7 @@ public class DataReader {
                 }
                 out.format("{ \"time\": %d, \"open\": %.3f }", times[i], prices[i]);
             }
-            out.format("]\n");
+            out.format("]}\n");
             return out.toString();
         }
         /**
