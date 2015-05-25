@@ -21,7 +21,7 @@ import org.apache.hadoop.hbase.client.Put;
 import org.apache.hadoop.hbase.client.Result;
 import org.apache.hadoop.hbase.util.Bytes;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.mapr.hadoop.Tick;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -66,7 +66,6 @@ public class HBaseExample {
 
 	public static void main(String[] args) throws IOException {
         Boolean async = args[2].equals("async");
-		ObjectMapper mapper = new ObjectMapper();
 
         DataReader rd = new DataReader();
         double t0 = System.nanoTime() * 1e-9;

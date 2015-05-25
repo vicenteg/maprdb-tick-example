@@ -11,6 +11,8 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.Map;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 public class HBaseExampleTest {
     @org.junit.Test
     public void testFormat() {
@@ -33,6 +35,7 @@ public class HBaseExampleTest {
     @Test
     public void testJsonIsValid() throws IOException {
         DataReader rd = new DataReader();
+        ObjectMapper mapper = new ObjectMapper();
         for (int i = 0; i < 4; i++) {
             double t0 = System.nanoTime() * 1e-9;
             Map<String, DataReader.TransactionList> m = rd.read(Resources.newReaderSupplier(Resources.getResource("data.1M.csv"), Charsets.UTF_8));
@@ -41,7 +44,7 @@ public class HBaseExampleTest {
                 PrintWriter pw = new PrintWriter(out);
                 for (String s : m.keySet()) {
                     // XXX: Add jackson parse here
-                    m.get(s).asJson(pw);
+                    mapper.writeValueAsString(m.get(s).asJson(pw));
                 }
             }
             double t2 = System.nanoTime() * 1e-9;
