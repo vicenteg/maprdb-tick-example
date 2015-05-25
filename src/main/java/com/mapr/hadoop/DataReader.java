@@ -100,7 +100,7 @@ public class DataReader {
 
         public String asJsonMaps() {
             Formatter out = new Formatter();
-            out.format("{\"prices\":[");
+            out.format("[");
 
             for (int i = 0; i < insert; i++) {
                 if (i > 0) {
@@ -108,12 +108,12 @@ public class DataReader {
                 }
                 out.format("{ \"time\": %d, \"open\": %.3f }", times[i], prices[i]);
             }
-            out.format("]}\n");
+            out.format("]\n");
             return out.toString();
         }
 
         public String asJsonMaps(PrintWriter out) {
-            out.format("{\"prices\":[");
+            out.format("[");
 
             for (int i = 0; i < insert; i++) {
                 if (i > 0) {
@@ -121,7 +121,7 @@ public class DataReader {
                 }
                 out.format("{ \"time\": %d, \"open\": %.3f }", times[i], prices[i]);
             }
-            out.format("]}\n");
+            out.format("]\n");
             return out.toString();
         }
         /**
