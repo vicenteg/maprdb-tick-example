@@ -55,6 +55,7 @@ public class HBaseExample {
 
         TickWriter tw = new TickWriter(tdc, m, tableName, cfName);
         es.execute(tw);
+        es.shutdown();
         //persistMapAsync(m, tableName, "cf1");
 	}
 }
