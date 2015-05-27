@@ -11,7 +11,6 @@ import org.joda.time.format.DateTimeFormatter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
-import java.text.SimpleDateFormat;
 import java.util.Formatter;
 import java.util.Iterator;
 import java.util.Map;

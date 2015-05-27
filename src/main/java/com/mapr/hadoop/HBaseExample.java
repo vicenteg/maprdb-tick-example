@@ -1,11 +1,13 @@
 package com.mapr.hadoop;
 
-import com.google.common.base.Splitter;
+import com.google.common.collect.Lists;
 import org.joda.time.*;
 
+import java.util.List;
 import java.util.Map;
 import java.io.*;
 import java.nio.file.Paths;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -36,8 +38,15 @@ public class HBaseExample {
         double t1 = System.nanoTime() * 1e-9;
         System.out.printf("Read %d equities in %.3f seconds\n", m.size(), t1 - t0);
 
-        TickWriter tw = new TickWriter(tdc, m, tableName, cfName);
-        es.execute(tw);
+        Set<String> keys = m.keySet();
+        final List<TickWriter> tasks = Lists.newArrayList();
+
+        for (String k: keys) {
+            TickWriter t = new TickWriter(tdc, m, tableName, cfName, k);
+            System.out.println("Submitted " + k);
+            es.submit(t);
+        }
+
         es.shutdown();
         tdc.term();
 	}
