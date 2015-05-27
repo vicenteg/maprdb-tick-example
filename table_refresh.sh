@@ -4,13 +4,25 @@ TABLE_PATH="/user/vgonzalez/ticks"
 # INPUT_FILE="src/test/resources/data.1M.csv"
 SYNC_OR_ASYNC="async"
 INPUT_FILE="/mapr/se1/user/vgonzalez/s20150518_1M/0_0_0.csv"
+CFNAME="cf1"
 
 function join { local IFS="$1"; shift; echo "$*"; }
 
 function new_table {
     maprcli table delete -path "$TABLE_PATH"
-    maprcli table create -path "$TABLE_PATH"
-    maprcli table cf create -path "$TABLE_PATH" -cfname cf1
+
+    # splits are hard coded. This is based on the NASDAQ symbol list.
+    # 12 regions, may want to increase the number of regions (by resplitting the symbol list) with bigger
+    # machines. The machine I'm currently using has 12 physical cores (24 threads).
+    splits="['AAIT','ATRO','CEMI','CZNC','FDML','HBNC','JUNO','MLVF','OVLY','RDUS','SPAN','UCBI','ZIOP',]"
+
+    cat <<EOF | hbase shell
+    create '$TABLE_PATH', '$CFNAME', { SPLITS => $splits }
+    EOF
+}
+
+function run {
+    java -cp $CP:`hbase classpath` com.mapr.hadoop.HBaseExample $*
 }
 
 
@@ -18,17 +30,13 @@ CP=`join : $(ls target/jackson*.jar target/HBaseExample*.jar target/async-*jar t
 for SYNC_OR_ASYNC in async sync; do
     echo "100K rows: $SYNC_OR_ASYNC"
     new_table
-    java -cp $CP:`hbase classpath` com.mapr.hadoop.HBaseExample "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_100K/0_0_0.csv" "$SYNC_OR_ASYNC"
+    run "$CFNAME" "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_100K/0_0_0.csv" "$SYNC_OR_ASYNC"
 
     echo "1 million rows: $SYNC_OR_ASYNC"
     new_table
-    java -cp $CP:`hbase classpath` com.mapr.hadoop.HBaseExample "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_1M/0_0_0.csv" "$SYNC_OR_ASYNC"
+    run "$CFNAME" "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_1M/0_0_0.csv" "$SYNC_OR_ASYNC"
 
     echo "10 million rows: $SYNC_OR_ASYNC"
     new_table
-    java -cp $CP:`hbase classpath` com.mapr.hadoop.HBaseExample "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_10M/0_0_0.csv" "$SYNC_OR_ASYNC"
-
-    #echo "100 million rows: $SYNC_OR_ASYNC"
-    #new_table
-    #java -cp $CP:`hbase classpath` com.mapr.hadoop.HBaseExample "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518/0_0_0.csv" "$SYNC_OR_ASYNC"
+    run "$CFNAME" "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_10M/0_0_0.csv" "$SYNC_OR_ASYNC"
 done
