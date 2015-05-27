@@ -18,25 +18,8 @@ import com.google.common.io.Files;
 public class HBaseExample {	
 	private static String generateKeyString(String symbol, DateTime dateTime) {
         return String.format("%s_%tY-%<tm-%<td-%<tH", symbol ,dateTime.toDate());
-		// return symbol + "_" + dateTime.getYear() + dateTime.getMonthOfYear() + dateTime.getDayOfMonth() + dateTime.getHourOfDay();
 	}
 
-    /*
-    public static void persistMapAsync(Map<String, DataReader.TransactionList> mp, String tableName, String cfName) throws java.io.IOException {
-        TickDataClient tdc = new TickDataClient("", cfName, tableName);
-        tdc.init();
-        byte[] cfNameBytes = Bytes.toBytes(cfName);
-        byte[] columnNameBytes = Bytes.toBytes("data");
-        double pt0 = System.nanoTime() * 1e-9;
-        for (String s : mp.keySet()) {
-            KeyValue kv = new KeyValue(Bytes.toBytes(s), cfNameBytes, columnNameBytes, Bytes.toBytes(mp.get(s).asJsonMaps()));
-            tdc.performPut(kv);
-        }
-        double pt1 = System.nanoTime() * 1e-9;
-        System.out.printf("Wrote %d equities in %.3f seconds\n", mp.size(), pt1 - pt0);
-        tdc.term();
-    }
-*/
 	public static void main(String[] args) throws IOException {
         String cfName = args[0];
         String tableName = args[1];
@@ -56,6 +39,6 @@ public class HBaseExample {
         TickWriter tw = new TickWriter(tdc, m, tableName, cfName);
         es.execute(tw);
         es.shutdown();
-        //persistMapAsync(m, tableName, "cf1");
+        tdc.term();
 	}
 }
