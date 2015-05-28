@@ -1,8 +1,6 @@
 #!/bin/sh -ex
 
 TABLE_PATH="/user/vgonzalez/ticks"
-# INPUT_FILE="src/test/resources/data.1M.csv"
-INPUT_FILE="/mapr/se1/user/vgonzalez/s20150518_1M/0_0_0.csv"
 CFNAME="cf1"
 
 NTHREADS=$(lscpu  | grep '^CPU(s):' | awk '{ print $2 }')
