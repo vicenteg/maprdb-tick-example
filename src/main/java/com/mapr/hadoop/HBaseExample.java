@@ -95,6 +95,7 @@ public class HBaseExample {
             tasks.add(t);
         }
 
+        double t2 = System.nanoTime() * 1e-9;
         try {
             List<Future<Double>> results = es.invokeAll(tasks);
             for (Future<Double> f: results) {
@@ -107,7 +108,8 @@ public class HBaseExample {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        System.out.printf("Wrote %d equities in %.3f seconds\n", m.size(), totalElapsed);
+        double t3 = System.nanoTime() * 1e-9;
+        System.out.printf("Wrote %d equities in %.3f seconds\n", m.size(), t3-t2);
 
         es.shutdown();
         tdc.term();
