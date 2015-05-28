@@ -1,15 +1,17 @@
 package com.mapr.hadoop;
 
 import com.google.common.collect.Lists;
+import org.apache.hadoop.hbase.util.Bytes;
+import org.hbase.async.KeyValue;
 import org.joda.time.*;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.io.*;
 import java.nio.file.Paths;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.*;
 
 import com.google.common.base.Charsets;
 import com.google.common.io.Files;
@@ -21,6 +23,52 @@ public class HBaseExample {
 	private static String generateKeyString(String symbol, DateTime dateTime) {
         return String.format("%s_%tY-%<tm-%<td-%<tH", symbol ,dateTime.toDate());
 	}
+
+    public static class TickWriterCallable implements Callable<Double> {
+        private TickDataClient tdc;
+        private Map<String, DataReader.TransactionList> mp;
+        private String tableName;
+        private String cfName;
+        private String key;
+        private Double elapsed;
+        Set<String> keySet;
+
+        public TickWriterCallable(TickDataClient _tdc, Map<String,DataReader.TransactionList> _m, String _tableName, String _cfName, String _key) {
+            tdc = _tdc;
+            mp = _m;
+            tableName = _tableName;
+            cfName = _cfName;
+            key = _key;
+            elapsed = 0.0;
+            keySet = new HashSet<String>();
+
+            keySet.add(key);
+        }
+
+        public void persistMapAsync() throws java.io.IOException {
+            byte[] cfNameBytes = Bytes.toBytes(cfName);
+            byte[] columnNameBytes = Bytes.toBytes("data");
+
+            double pt0 = System.nanoTime();
+            for (String s : keySet) {
+                KeyValue kv = new KeyValue(Bytes.toBytes(s), cfNameBytes, columnNameBytes, Bytes.toBytes(mp.get(s).asJsonMaps()));
+                tdc.performPut(kv);
+            }
+            double pt1 = System.nanoTime();
+            System.out.printf("Wrote %d equities in %.3f seconds\n", mp.size(), pt1 - pt0);
+            elapsed = pt1-pt0;
+        }
+
+        @Override
+        public Double call() {
+            try {
+                persistMapAsync();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return elapsed;
+        }
+    }
 
 	public static void main(String[] args) throws IOException {
         String cfName = args[0];
@@ -39,12 +87,25 @@ public class HBaseExample {
         System.out.printf("Read %d equities in %.3f seconds\n", m.size(), t1 - t0);
 
         Set<String> keys = m.keySet();
-        final List<TickWriter> tasks = Lists.newArrayList();
+        final List<TickWriterCallable> tasks = Lists.newArrayList();
 
+        Long totalElapsed = 0L;
         for (String k: keys) {
-            TickWriter t = new TickWriter(tdc, m, tableName, cfName, k);
-            System.out.println("Submitted " + k);
-            es.submit(t);
+            TickWriterCallable t = new TickWriterCallable(tdc, m, tableName, cfName, k);
+            tasks.add(t);
+        }
+
+        try {
+            List<Future<Double>> results = es.invokeAll(tasks);
+            for (Future f: results) {
+                try {
+                    totalElapsed += (Long) f.get();
+                } catch (ExecutionException e) {
+                    e.printStackTrace();
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         es.shutdown();
