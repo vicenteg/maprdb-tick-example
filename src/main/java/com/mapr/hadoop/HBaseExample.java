@@ -107,6 +107,7 @@ public class HBaseExample {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+        System.out.printf("Wrote %d equities in %.3f seconds\n", m.size(), totalElapsed);
 
         es.shutdown();
         tdc.term();
