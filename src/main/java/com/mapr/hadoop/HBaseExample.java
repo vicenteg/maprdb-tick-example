@@ -74,7 +74,7 @@ public class HBaseExample {
         String cfName = args[0];
         String tableName = args[1];
         String inputFilePath = args[2];
-        int nThreads = 5;
+        int nThreads = Integer.getInteger(args[3]);
 
         ExecutorService es = Executors.newFixedThreadPool(nThreads);
         TickDataClient tdc = new TickDataClient("", cfName, tableName);
