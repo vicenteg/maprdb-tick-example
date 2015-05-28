@@ -5,6 +5,8 @@ TABLE_PATH="/user/vgonzalez/ticks"
 INPUT_FILE="/mapr/se1/user/vgonzalez/s20150518_1M/0_0_0.csv"
 CFNAME="cf1"
 
+NTHREADS=$(lscpu  | grep '^CPU(s):' | awk '{ print $2 }')
+
 function join { local IFS="$1"; shift; echo "$*"; }
 
 function new_table {
@@ -28,4 +30,4 @@ CP=`join : $(ls target/jackson*.jar target/HBaseExample*.jar target/async-*jar t
 
 echo "10 million rows"
 new_table
-run "$CFNAME" "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_10M/0_0_0.csv"
+run "$CFNAME" "$TABLE_PATH" "/mapr/se1/user/vgonzalez/s20150518_10M/0_0_0.csv" $NTHREADS
