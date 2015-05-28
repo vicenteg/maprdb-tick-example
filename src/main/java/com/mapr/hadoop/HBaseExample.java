@@ -49,13 +49,13 @@ public class HBaseExample {
             byte[] cfNameBytes = Bytes.toBytes(cfName);
             byte[] columnNameBytes = Bytes.toBytes("data");
 
-            double pt0 = System.nanoTime();
+            double pt0 = System.nanoTime() * 1e-9;
             for (String s : keySet) {
                 KeyValue kv = new KeyValue(Bytes.toBytes(s), cfNameBytes, columnNameBytes, Bytes.toBytes(mp.get(s).asJsonMaps()));
                 tdc.performPut(kv);
             }
-            double pt1 = System.nanoTime();
-            System.out.printf("Wrote %d equities in %.3f seconds\n", mp.size(), pt1 - pt0);
+            double pt1 = System.nanoTime() * 1e-9;
+            // System.out.printf("Wrote %d equities in %.3f seconds\n", mp.size(), pt1 - pt0);
             elapsed = pt1-pt0;
         }
 
@@ -89,7 +89,7 @@ public class HBaseExample {
         Set<String> keys = m.keySet();
         final List<TickWriterCallable> tasks = Lists.newArrayList();
 
-        Long totalElapsed = 0L;
+        Double totalElapsed = 0.0;
         for (String k: keys) {
             TickWriterCallable t = new TickWriterCallable(tdc, m, tableName, cfName, k);
             tasks.add(t);
@@ -97,9 +97,9 @@ public class HBaseExample {
 
         try {
             List<Future<Double>> results = es.invokeAll(tasks);
-            for (Future f: results) {
+            for (Future<Double> f: results) {
                 try {
-                    totalElapsed += (Long) f.get();
+                    totalElapsed += f.get();
                 } catch (ExecutionException e) {
                     e.printStackTrace();
                 }
