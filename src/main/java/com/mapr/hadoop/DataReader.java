@@ -20,6 +20,9 @@ import java.util.Map;
  * special data structure that keeps data in arrays instead of in generic data structures.
  */
 public class DataReader {
+    // default is to cache part of the date string
+    private boolean useCache = true;
+
     public Map<String, TransactionList> read(InputSupplier<InputStreamReader> input) throws IOException {
         return CharStreams.readLines(
                 input,
@@ -27,7 +30,10 @@ public class DataReader {
                     private String price;
                     private String date;
                     private String symbol;
+                    // full parsing of the date and time is safer
                     DateTimeFormatter fmt = DateTimeFormat.forPattern("dd-MMM-yyyy HH:mm:ss.SSS");
+                    // but by cachine the date, we can handle calendar issues correctly and go much faster
+                    DateTimeFormatter dateOnlyFmt = DateTimeFormat.forPattern("dd-MMM-yyyy");
 
                     Map<String, TransactionList> data = Maps.newHashMap();
                     Splitter onComma = Splitter.on(",").trimResults();
@@ -45,7 +51,7 @@ public class DataReader {
                             date = pieces.next();
                             price = pieces.next();
 
-                            long timeStamp = fmt.parseMillis(date);
+                            long timeStamp = parseDateTime(date);
                             double open = Double.parseDouble(price);
 
                             TransactionList trans = data.get(symbol);
@@ -58,6 +64,46 @@ public class DataReader {
                         return true;
                     }
 
+                    // this is the cache of the last date we converted
+                    private String lastDate = "xxxxx";
+                    // and the millisecond offset at the beginning of that day
+                    private long baseTime = 0;
+
+                    // conversion constants
+                    private static final int X1MS = 1;
+                    private static final int X10MS = 10;
+                    private static final int X100MS = 100;
+                    private static final int X1SECOND = 1000;
+                    private static final int X10SECONDS = 10000;
+                    private static final int X1MINUTE = 60 * X1SECOND;
+                    private static final int X10MINUTES = 600 * X1SECOND;
+                    private static final int X1HOUR = 60 * X1MINUTE;
+                    private static final int X10HOURS = 600 * X1MINUTE;
+
+                    private long parseDateTime(String date) {
+                        if (!useCache) {
+                            return fmt.parseMillis(date);
+                        } else {
+                            // is cache valid?
+                            if (!date.startsWith(lastDate)) {
+                                lastDate = date.substring(0, 11);
+                                baseTime = dateOnlyFmt.parseMillis(lastDate);
+                            }
+                            // it is now ... we can convert directly from here
+                            long r = baseTime;
+                            r += (date.charAt(12) - '0') * X10HOURS;
+                            r += (date.charAt(13) - '0') * X1HOUR;
+                            r += (date.charAt(15) - '0') * X10MINUTES;
+                            r += (date.charAt(16) - '0') * X1MINUTE;
+                            r += (date.charAt(18) - '0') * X10SECONDS;
+                            r += (date.charAt(19) - '0') * X1SECOND;
+                            r += (date.charAt(21) - '0') * X100MS;
+                            r += (date.charAt(22) - '0') * X10MS;
+                            r += (date.charAt(23) - '0') * X1MS;
+                            return r;
+                        }
+                    }
+
                     @Override
                     public Map<String, TransactionList> getResult() {
                         return data;
@@ -65,6 +111,9 @@ public class DataReader {
                 });
     }
 
+    public void useCache(boolean useCache) {
+        this.useCache = useCache;
+    }
 
     /**
      * Keeps a bunch of time-stamped prices in arrays.  Presumably these are for a single equity.
@@ -123,6 +172,7 @@ public class DataReader {
             out.format("]\n");
             return out.toString();
         }
+
         /**
          * Formats our data as a single JSON object with arrays of values in it.
          */
@@ -146,6 +196,7 @@ public class DataReader {
 
         /**
          * Formats our data to a stream without building a string.
+         *
          * @param out The stream to write to.
          */
         public String asJsonArrays(PrintWriter out) {
