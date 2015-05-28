@@ -24,6 +24,21 @@ public class HBaseExampleTest {
     @Test
     public void testReadSpeed() throws IOException, InterruptedException {
         DataReader rd = new DataReader();
+        rd.useCache(false);
+        for (int i = 0; i < 4; i++) {
+            double t0 = System.nanoTime() * 1e-9;
+            Map<String, DataReader.TransactionList> m = rd.read(Resources.newReaderSupplier(Resources.getResource("data.1M.csv"), Charsets.UTF_8));
+            double t1 = System.nanoTime() * 1e-9;
+            System.out.printf("%d equities in %.3f seconds\n", m.size(), t1 - t0);
+        }
+        rd.useCache(true);
+        for (int i = 0; i < 4; i++) {
+            double t0 = System.nanoTime() * 1e-9;
+            Map<String, DataReader.TransactionList> m = rd.read(Resources.newReaderSupplier(Resources.getResource("data.1M.csv"), Charsets.UTF_8));
+            double t1 = System.nanoTime() * 1e-9;
+            System.out.printf("%d equities in %.3f seconds\n", m.size(), t1 - t0);
+        }
+        rd.useCache(false);
         for (int i = 0; i < 4; i++) {
             double t0 = System.nanoTime() * 1e-9;
             Map<String, DataReader.TransactionList> m = rd.read(Resources.newReaderSupplier(Resources.getResource("data.1M.csv"), Charsets.UTF_8));
