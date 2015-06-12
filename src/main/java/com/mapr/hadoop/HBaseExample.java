@@ -55,7 +55,6 @@ public class HBaseExample {
                 tdc.performPut(kv);
             }
             double pt1 = System.nanoTime() * 1e-9;
-            // System.out.printf("Wrote %d equities in %.3f seconds\n", mp.size(), pt1 - pt0);
             elapsed = pt1-pt0;
         }
 
@@ -92,7 +91,7 @@ public class HBaseExample {
         for (String k: keys) {
             nTicks += m.get(k).size();
         }
-        System.out.printf(csvHeader + "read,%d,%d,%.3f\n", nTicks, m.size(), t1 - t0);
+        System.out.printf("read,%d,%d,%.3f\n", nTicks, m.size(), t1-t0);
 
         final List<TickWriterCallable> tasks = Lists.newArrayList();
 
@@ -116,7 +115,7 @@ public class HBaseExample {
             e.printStackTrace();
         }
         double t3 = System.nanoTime() * 1e-9;
-        System.out.printf(csvHeader + "write,%d,%d,%.3f\n", nTicks, m.size(), t3-t2);
+        System.out.printf("write,%d,%d,%.3f\n", nTicks, m.size(), t3-t2);
 
         es.shutdown();
         tdc.term();
