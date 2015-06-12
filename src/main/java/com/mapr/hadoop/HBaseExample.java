@@ -84,9 +84,16 @@ public class HBaseExample {
         double t0 = System.nanoTime() * 1e-9;
         Map<String, DataReader.TransactionList> m = rd.read(Files.newReaderSupplier(Paths.get(inputFilePath).toFile(), Charsets.UTF_8));
         double t1 = System.nanoTime() * 1e-9;
-        System.out.printf("Read %d equities in %.3f seconds\n", m.size(), t1 - t0);
+
 
         Set<String> keys = m.keySet();
+        int nTicks = 0;
+        for (String k: keys) {
+            nTicks += m.get(k).size();
+        }
+        System.out.printf("Read %d ticks in %.3f seconds\n", nTicks, t1 - t0);
+        System.out.printf("Read %d equities in %.3f seconds\n", m.size(), t1 - t0);
+
         final List<TickWriterCallable> tasks = Lists.newArrayList();
 
         Double totalElapsed = 0.0;
