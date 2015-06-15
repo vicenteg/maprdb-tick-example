@@ -74,7 +74,7 @@ public class HBaseExample {
         String tableName = args[1];
         String inputFilePath = args[2];
         int nThreads = Integer.parseInt(args[3]);
-        String csvHeader = "op,nTicks,equities,elapsed\n";
+        String csvHeader = "op,nTicks,equities,start,end,elapsed\n";
 
         ExecutorService es = Executors.newFixedThreadPool(nThreads);
         TickDataClient tdc = new TickDataClient("", cfName, tableName);
@@ -91,7 +91,8 @@ public class HBaseExample {
         for (String k: keys) {
             nTicks += m.get(k).size();
         }
-        System.out.printf("read,%d,%d,%.3f\n", nTicks, m.size(), t1-t0);
+        System.out.println(csvHeader);
+        System.out.printf("read,%d,%d,%.3f,%.3f,%.3f\n", nTicks, m.size(), t0, t1, t1-t0);
 
         final List<TickWriterCallable> tasks = Lists.newArrayList();
 
@@ -115,7 +116,7 @@ public class HBaseExample {
             e.printStackTrace();
         }
         double t3 = System.nanoTime() * 1e-9;
-        System.out.printf("write,%d,%d,%.3f\n", nTicks, m.size(), t3-t2);
+        System.out.printf("write,%d,%d,%.3f,%.3f,%.3f\n", nTicks, m.size(), t2,t3,t3-t2);
 
         es.shutdown();
         tdc.term();
